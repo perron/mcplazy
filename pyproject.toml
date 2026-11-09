@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcplazy"
+version = "0.1.0"
+description = "Lazy MCP gateway that exposes catalog search and on-demand schemas instead of dumping every tool."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Karl Perron"}]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+mcplazy = "mcplazy.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["mcplazy*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
