@@ -10,8 +10,13 @@ hand-written list). In serve mode it speaks MCP over stdio with
 
 ## Install
 
+Python 3.10 or later.
+
+From a checkout:
+
 ```bash
-python3 -m pip install -e .
+python3 -m pip install .
+python3 -m pip install -e ".[dev]"  # optional, for tests
 ```
 
 ## 30-second example
@@ -45,3 +50,23 @@ stdio backend can be added next without changing the four gateway tools.
 
 Motivated by the MCP "context tax" reports of late Oct / early Nov 2026.
 Original JSON-RPC implementation; no source was copied from any MCP server.
+
+## Limits
+
+- This release uses a static catalog. Optional canned `result` values can be included in the catalog for demos and tests.
+- `invoke` does **not** forward calls to a live MCP backend. If a tool has no canned `result`, it returns `{"ok": true, "tool": "...", "arguments": {...}}`.
+- `serve` speaks MCP over stdio with `Content-Length` framing. It is not a network server.
+- Incoming stdio messages larger than 8 MiB are rejected.
+- Duplicate tool names in a catalog are an error.
+
+From GitHub you can also install with:
+
+```bash
+python3 -m pip install git+https://github.com/perron/mcplazy.git
+```
+
+This package is not published to PyPI.
+
+## License
+
+MIT. See `LICENSE`. Please read `SECURITY.md` before filing a vulnerability report.

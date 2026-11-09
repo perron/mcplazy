@@ -1,19 +1,23 @@
 # mcplazy proof
 
-Captured 2026-11-09 12:13 PST on the box.
+Captured 2026-11-09 13:26 PST.
+
+Fresh-venv install: `pip install .` succeeded and `mcplazy --version` printed `mcplazy 0.1.1`.
+
+Tests: 16 passed in 0.03s
 
 ## tax (eager schemas vs four gateway tools)
 ```
 {
   "backend_tools": 25,
-  "eager_tokens": 3154,
+  "eager_tokens": 2161,
   "lazy_tokens": 198,
-  "saved_tokens": 2956,
+  "saved_tokens": 1963,
   "estimator": "ceil(utf8_bytes / 4)"
 }
 ```
 
-## catalog_search
+## catalog_search for github.tool_1
 ```
 [
   {
@@ -62,3 +66,5 @@ Captured 2026-11-09 12:13 PST on the box.
   }
 ]
 ```
+
+This release uses a static catalog. `invoke` does not forward to a live backend.

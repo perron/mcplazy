@@ -7,3 +7,5 @@ __pycache__/
 store.json
 .deltacursor.jsonl
 events.jsonl
+build/
+dist/

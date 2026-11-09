@@ -8,9 +8,10 @@ import sys
 from pathlib import Path
 from typing import Any, Iterable
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 PROTOCOL_VERSION = "2024-11-05"
+MAX_MESSAGE_BYTES = 8 * 1024 * 1024
 
 
 def estimate_tokens(text: str) -> int:
@@ -28,10 +29,14 @@ def load_catalog(path: Path) -> list[dict[str, Any]]:
     else:
         raise ValueError("catalog must be a tool array or an object with a tools array")
     cleaned = []
+    seen: set[str] = set()
     for tool in tools:
         name = tool.get("name")
         if not name:
             raise ValueError("every catalog tool needs a name")
+        if name in seen:
+            raise ValueError(f"duplicate tool name in catalog: {name}")
+        seen.add(name)
         cleaned.append({
             "name": name,
             "description": tool.get("description") or "",
@@ -184,7 +189,13 @@ def read_message(stream) -> dict[str, Any] | None:
         if ":" in line:
             key, value = line.split(":", 1)
             headers[key.strip().lower()] = value.strip()
-    length = int(headers.get("content-length", "0"))
+    raw_length = headers.get("content-length", "0")
+    try:
+        length = int(raw_length)
+    except ValueError as exc:
+        raise ValueError(f"invalid Content-Length: {raw_length!r}") from exc
+    if length < 0 or length > MAX_MESSAGE_BYTES:
+        raise ValueError("invalid Content-Length")
     body = stream.read(length)
     if isinstance(body, bytes):
         body = body.decode("utf-8")
@@ -254,7 +265,11 @@ def main(argv: list[str] | None = None) -> int:
     p_call.add_argument("tool")
     p_call.add_argument("--args", default="{}", help="JSON object of arguments")
     args = parser.parse_args(argv)
-    catalog = Catalog(load_catalog(Path(args.catalog)))
+    try:
+        catalog = Catalog(load_catalog(Path(args.catalog)))
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     cmd = args.cmd or "serve"
     if cmd == "tax":
         print(json.dumps(tax_compare(catalog), indent=2))
