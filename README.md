@@ -19,7 +19,7 @@ python3 -m pip install .
 python3 -m pip install -e ".[dev]"  # optional, for tests
 ```
 
-## 30-second example
+## 30-second quick start
 
 ```bash
 cat > catalog.json << 'EOF'
@@ -38,6 +38,29 @@ EOF
 mcplazy --catalog catalog.json tax
 mcplazy --catalog catalog.json call catalog_search --args '{"query":"issue"}'
 ```
+
+Sample output from that exact example:
+
+```
+$ mcplazy --catalog catalog.json tax
+{
+  "backend_tools": 1,
+  "eager_tokens": 46,
+  "lazy_tokens": 198,
+  "saved_tokens": -152,
+  "estimator": "ceil(utf8_bytes / 4)"
+}
+
+$ mcplazy --catalog catalog.json call catalog_search --args '{"query":"issue"}'
+[
+  {
+    "name": "github.create_issue",
+    "description": "Create an issue in a GitHub repository."
+  }
+]
+```
+
+With one tiny backend tool, the four gateway schemas can be *larger* than the eager dump (`saved_tokens` is negative). That is expected. On a 25-tool catalog the same command reports a savings (in one measured run: eager 2161, lazy 198, saved 1963, still `ceil(utf-8 bytes / 4)`).
 
 `tax` prints eager vs lazy schema token estimates (`ceil(utf-8 bytes / 4)`).
 `serve` is the stdio MCP server you can hook into a client later.
@@ -67,6 +90,28 @@ python3 -m pip install git+https://github.com/perron/mcplazy.git
 
 This package is not published to PyPI.
 
+## Use it with your agent
+
+You can point a coding agent at this repository and ask it to use the tool, adapt it, or write a small tool in the same style. That works with Claude Code, Codex, Cursor, Grok Bot, and anything else that can clone a git repo and run a Python CLI.
+
+A short prompt you can paste:
+
+> Clone https://github.com/perron/mcplazy and read the README limits carefully. Using the catalog at ./catalog.json, show me the tax comparison and a catalog_search for 'issue'. Do not claim that invoke talks to a live backend; this release uses a static catalog.
+
+If you want a new tool in this style, say so explicitly: one job, standard-library Python, pytest first, no API key, and an honest Limits section.
+
+## Contributing / how you can help
+
+Bug reports, tight tests, and small honest features are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to run the suite and for pull request guidelines.
+
+Good first issues:
+
+- Optional live stdio forwarding for `invoke`, covered by tests (this release uses a static catalog on purpose).
+- Add a `limit` argument to `catalog_list` and `catalog_search`.
+- Reject or warn on a catalog tool whose `inputSchema` is not an object.
+
+If you are unsure whether an idea fits, open an issue before writing a large patch.
+
 ## License
 
-MIT. See `LICENSE`. Please read `SECURITY.md` before filing a vulnerability report.
+MIT. See `LICENSE`. Please read `SECURITY.md` before filing a vulnerability report. Agents should also read `AGENTS.md`.
